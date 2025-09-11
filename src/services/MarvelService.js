@@ -2,13 +2,12 @@ import md5 from "md5";
 import {useHttp} from '../hooks/http.hook';
 
 const useMarvelService = () => {
+	
 	const {loading, request, error, clearError} = useHttp();
-	const _baseUrl = "https://gateway.marvel.com/v1/public/";
-	// const _PUBLICKEY = "ca6ebcdf506dab97c2c0256b367848c4";
-	// const _PRIVATEKEY = "f0655c29263c9aa0b053af7c9598228819172c1b";
-	const _PUBLICKEY = "8aaef968ece015393ca247685ea7cf69";
-	const _PRIVATEKEY = "0f7f1f2a4be2aed0b8d95bf659a1ef5ce08d7e86";
 
+	const _baseUrl = "https://gateway.marvel.com/v1/public/";
+	const _PUBLICKEY = process.env.REACT_APP_PUBLIC_KEY;
+	const _PRIVATEKEY = process.env.REACT_APP_PRIVATE_KEY;
 
 	function createAPIUrl() {
 		const ts = Date.now();
@@ -42,9 +41,15 @@ const useMarvelService = () => {
 	}
 
 	const getApiResource = (id, res = "characters") => {
-		const url = _baseUrl + `${res}/${id}?` + createAPIUrl()
+		const url = _baseUrl + `${res}/${id}?` + createAPIUrl();
 		return request(url);
 	}
+
+	const getApiResourceWithParams = (res, params) => {
+		const urlParams = new URLSearchParams(params).toString();
+		const url = _baseUrl + `${res}?${urlParams}&` + createAPIUrl();
+		return request(url);
+	} 
 
 	const getAllCharacters = async (limit, offset) => {
 		const apiResource = "characters";
@@ -54,6 +59,15 @@ const useMarvelService = () => {
 	const getCharacter = async (id) => {
 		const apiResource = "characters";
 		const res = await getApiResource(id, apiResource);
+		return _transformCharacter(res.data.results[0]);
+	}
+	const getCharacterByName = async (name) => {
+		const apiResource = "characters";
+		const res = await getApiResourceWithParams(apiResource, {name});
+		
+		if (!res.data.results[0]){
+			throw new Error(`Character with name ${name} not found`);
+		}
 		return _transformCharacter(res.data.results[0]);
 	}
 
@@ -99,6 +113,6 @@ const useMarvelService = () => {
 		}
 	}
 
-	return {getCharacter, getAllCharacters, loading, error, clearError, getAllComics, getComic}
+	return {getCharacter, getAllCharacters, loading, error, clearError, getAllComics, getComic, getCharacterByName}
 }
 export default useMarvelService;

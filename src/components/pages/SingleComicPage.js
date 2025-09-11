@@ -1,6 +1,6 @@
 import './singleComicPage.scss';
 
-import { Link, useParams } from 'react-router-dom';
+import { Link, Redirect, useParams } from 'react-router-dom';
 import useMarvelService from '../../services/MarvelService';
 import { useState, useEffect } from 'react';
 import Spinner from '../spinner/Spinner';
@@ -27,6 +27,7 @@ const SingleComicPage = () => {
 	}
 
 	const errorMessage = error ? <ErrorMessage /> : null;
+	// const errorMessage = error ? <Redirect to="/404"/> : null;
 	const spinner = loading ? <Spinner /> : null;
 	const content = !(loading || error || !comic) ? <View comic={comic} /> : null;
 
