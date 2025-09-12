@@ -1,5 +1,5 @@
 import './singleComicPage.scss';
-
+import setContent from '../../utils/setContent';
 import { Link, Redirect, useParams } from 'react-router-dom';
 import useMarvelService from '../../services/MarvelService';
 import { useState, useEffect } from 'react';
@@ -9,7 +9,7 @@ import ErrorMessage from '../errorMessage/ErrorMessage';
 const SingleComicPage = () => {
 	const { comicId } = useParams();
 	const [comic, setComic] = useState(null);
-	const { loading, error, getComic, clearError } = useMarvelService();
+	const { loading, error, getComic, clearError, httpProcess, setHttpProcess } = useMarvelService();
 
 	useEffect(() => {
 		updateComic()
@@ -19,7 +19,8 @@ const SingleComicPage = () => {
 		clearError();
 
 		getComic(comicId)
-			.then(onComicLoaded);
+			.then(onComicLoaded)
+			.then(() => setHttpProcess('confirmed'));
 	}
 
 	const onComicLoaded = (comic) => {
@@ -33,15 +34,13 @@ const SingleComicPage = () => {
 
 	return (
 		<>
-		{errorMessage}
-		{spinner}
-		{content}
+		{setContent(httpProcess, View, comic)}
 		</>
 	)
 }
 
-const View = ({ comic }) => {
-	const { title, description, thumbnail, price, pageCount, language } = comic;
+const View = ({ data }) => {
+	const { title, description, thumbnail, price, pageCount, language } = data;
 	return (
 		<div className="single-comic">
 			<img src={thumbnail} alt={title} className="single-comic__img" />

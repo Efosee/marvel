@@ -2,14 +2,12 @@ import { useState, useEffect } from 'react';
 import './charInfo.scss';
 import useMarvelService from '../../services/MarvelService';
 
-import Spinner from '../spinner/Spinner';
-import ErrorMessage from '../errorMessage/ErrorMessage';
-import Skeleton from '../skeleton/Skeleton';
+import setContent from '../../utils/setContent';
 
 const CharInfo = (props) => {
 
 	const [char, setChar] = useState(null);
-	const { loading, error, getCharacter, clearError, httpProcess, setHttpProcess} = useMarvelService();
+	const {getCharacter, clearError, httpProcess, setHttpProcess} = useMarvelService();
 	useEffect(() => {
 		updateChar()
 	}, [props.charId])
@@ -31,38 +29,16 @@ const CharInfo = (props) => {
 		setHttpProcess('confirmed')
 	}
 
-	const setContent = (httpProcess, char) => {
-		switch(httpProcess){
-			case "waiting":
-				return <Skeleton />
-			case "loading":
-				return <Spinner />
-			case "confirmed":
-				return <View char={char} />
-			case "error":
-				return <ErrorMessage />
-			default:
-				return new Error("Unexpected process");
-		}
-	}
-
-
-	// const { char, loading, error } = this.state;
-	// const skeleton = char || loading || error ? null : <Skeleton />;
-	// const errorMessage = error ? <ErrorMessage /> : null;
-	// const spinner = loading ? <Spinner /> : null;
-	// const content = !(loading || error || !char) ? <View char={char} /> : null;
-
 	return (
 		<div className="char__info">
-			{setContent(httpProcess, char)}
+			{setContent(httpProcess, View, char)}
 		</div>
 	)
 }
 
 
-const View = ({ char }) => {
-	const { thumbnail, name, homepage, wiki, description, comics } = char;
+const View = ({ data }) => {
+	const { thumbnail, name, homepage, wiki, description, comics } = data;
 
 	const checkImage = (thumbnail, name) => {
 		if (thumbnail.includes("image_not_available")) {

@@ -6,12 +6,27 @@ import './commicList.scss';
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 
+const setContent = (httpProcess, Component, newItemLoading) => {
+	switch(httpProcess){
+			case "waiting":
+				return <Spinner />
+			case "loading":
+				return newItemLoading ? <Component /> : <Spinner />;
+			case "confirmed":
+				return <Component/>
+			case "error":
+				return <ErrorMessage />
+			default:
+				return new Error("Unexpected process state");
+		}
+} 
+
 function ComicsList() {
 	const [comicsList, setComicsList] = useState([]);
 	const [newItemLoading, setNewItemLoading] = useState(false);
 	const [offset, setOffset] = useState(0);
 	const [comicsEnded, setComicsEnded] = useState(false);
-	const { error, loading, getAllComics } = useMarvelService();
+	const { error, loading, getAllComics, httpProcess, setHttpProcess } = useMarvelService();
 
 	const focusRef = useRef([]);
 
@@ -35,6 +50,7 @@ function ComicsList() {
 		initial ? setNewItemLoading(false) : setNewItemLoading(true);
 		getAllComics(8, offset)
 			.then(onCharListLoaded)
+			.then(() => setHttpProcess('confirmed'));
 	}
 	const onCharListLoaded = (newComicsList) => {
 		let ended = false;
@@ -87,13 +103,11 @@ function ComicsList() {
 	}
 
 	const list = renderList(comicsList);
-	const errorMessage = error ? <ErrorMessage /> : null;
-	const spinner = loading && !newItemLoading ? <Spinner /> : null;
+	// const errorMessage = error ? <ErrorMessage /> : null;
+	// const spinner = loading && !newItemLoading ? <Spinner /> : null;
 	return (
 		<div className="comics__list">
-			{errorMessage}
-			{spinner}
-			{list}
+			{setContent(httpProcess, () => list, newItemLoading)}
 			<button className="button button__main button__long"
 				style={{ 'display': comicsEnded ? 'none' : 'block' }}
 				disabled={newItemLoading}
